@@ -9,9 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/joho/godotenv"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -23,13 +22,19 @@ type Transactions struct {
 	Value float64
 }
 
-var DBUser string
-var DBPassword string
-var DBHost string
-var DBPort string
-var DBName string
-var SGApi string
-var SGTemplate string
+//Generate the struct for number of transaction per month
+type transaction struct {
+	Month   string `json:"month"`
+	NumTran int    `json:"numTran"`
+}
+
+var dbUser string
+var dbPassword string
+var dbHost string
+var dbPort string
+var dbName string
+var sgApi string
+var sgTemplate string
 var db *sql.DB
 var err error
 
@@ -40,13 +45,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	DBUser = os.Getenv("DB_USER")
-	DBPassword = os.Getenv("DB_PASSWORD")
-	DBHost = os.Getenv("DB_HOST")
-	DBPort = os.Getenv("DB_PORT")
-	DBName = os.Getenv("DB_NAME")
-	SGApi = os.Getenv("SG_APIKEY")
-	SGTemplate = os.Getenv("SG_TEMPLATEID")
+	dbUser = os.Getenv("DB_USER")
+	dbPassword = os.Getenv("DB_PASSWORD")
+	dbHost = os.Getenv("DB_HOST")
+	dbPort = os.Getenv("DB_PORT")
+	dbName = os.Getenv("DB_NAME")
+	sgApi = os.Getenv("SG_APIKEY")
+	sgTemplate = os.Getenv("SG_TEMPLATEID")
 
 	csvFile("client1.csv")
 
@@ -54,16 +59,15 @@ func main() {
 func connectDB() {
 
 	//Use sql.Open to initialize a new sql.DB object
-	//Pass the driver name and the connection string
-	dataBaseString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DBUser, DBPassword, DBHost, DBPort, DBName)
+	dataBaseString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err = sql.Open("mysql", dataBaseString)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	//Call db.Ping() to check the connection
 	pingErr := db.Ping()
 	if pingErr != nil {
-		log.Fatal(pingErr)
+		log.Println(pingErr)
 	}
 	fmt.Println("Connected!")
 
@@ -73,14 +77,14 @@ func csvFile(testFile string) {
 
 	file, err := os.Open("./test/" + testFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer file.Close()
 	// Parse the CSV file
 	reader := csv.NewReader(file)
 	transactions, err := reader.ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	connectDB()
 
@@ -104,13 +108,12 @@ func csvFile(testFile string) {
 		11: "November",
 		12: "December",
 	}
-	var transactionsMonthly string
 	for _, row := range transactions[1:] {
 		//Set idFile variable with row[0] value also with Atoi convert String to int
 		idFile, err := strconv.Atoi(row[0])
 
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		//Set date variable with row[1] value
@@ -119,11 +122,11 @@ func csvFile(testFile string) {
 		amount, err := strconv.ParseFloat(strings.Trim(row[2], " "), 64)
 
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		month, err := strconv.Atoi(strings.Split(date, "/")[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		monthName := monthMap[month]
 
@@ -143,13 +146,13 @@ func csvFile(testFile string) {
 		var count int
 		err = db.QueryRow("SELECT COUNT(*) FROM stori_transactions WHERE file = ? AND idFile = ?", testFile, idFile).Scan(&count)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		// Insert the row if it doesn't already exist in the table
 		if count == 0 {
 			_, err = db.Exec("INSERT INTO stori_transactions(file,idFile,transaction,date) VALUES (?,?, ?, ?)", testFile, idFile, amount, date)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		}
 	}
@@ -163,29 +166,46 @@ func csvFile(testFile string) {
 
 	//Print Monthly transactions
 	for monthName, numTransactions := range monthlyTransactions {
-		transactionsMonthly += fmt.Sprintf("Number of transaction in %s: %d \n", monthName, numTransactions)
+		summary += fmt.Sprintf("Number of transaction in %s: %d \n", monthName, numTransactions)
 	}
 	balanceStr := fmt.Sprintf("%.2f", balance)
 	averageCreditStr := fmt.Sprintf("%.2f", averageCredit)
 	averageDebitStr := fmt.Sprintf("%.2f", averageDebit)
-	fmt.Println(summary, transactionsMonthly)
+	fmt.Println(summary)
 
-	sendEmail(balanceStr, averageCreditStr, averageDebitStr, transactionsMonthly)
+	sendEmail(balanceStr, averageCreditStr, averageDebitStr, monthlyTransactions)
 
 }
-func sendEmail(balance string, avergaCredit string, averageDebit string, transactionsMonthly string) error {
+
+func sendEmail(balance string, averageCredit string, averageDebit string, transactionsMonthly map[string]int) error {
 	from := mail.NewEmail("Stori Challenge", "neto_1208@hotmail.com")
 	subject := "Summary Report"
 	to := mail.NewEmail("Client", "neto120899@hotmail.com")
 
-	message := mail.NewV3MailInit(from, subject, to)
-	message.SetTemplateID(SGTemplate)
-	message.Personalizations[0].SetSubstitution("-balance-", balance)
-	message.Personalizations[0].SetSubstitution("-debitavg-", averageDebit)
-	message.Personalizations[0].SetSubstitution("-creditavg-", avergaCredit)
-	message.Personalizations[0].SetSubstitution("-monthly-", transactionsMonthly)
+	message := mail.NewV3Mail()
+	message.SetFrom(from)
+	message.Subject = subject
 
-	client := sendgrid.NewSendClient(SGApi)
+	personalization := mail.NewPersonalization()
+	personalization.AddTos(to)
+
+	personalization.SetDynamicTemplateData("balance", balance)
+	personalization.SetDynamicTemplateData("debitavg", averageDebit)
+	personalization.SetDynamicTemplateData("creditavg", averageCredit)
+
+	var transactions []transaction
+
+	for month, numTran := range transactionsMonthly {
+		transactions = append(transactions, transaction{
+			Month:   month,
+			NumTran: numTran,
+		})
+	}
+	personalization.SetDynamicTemplateData("transactionsMonthly", transactions)
+	message.AddPersonalizations(personalization)
+	message.SetTemplateID(sgTemplate)
+
+	client := sendgrid.NewSendClient(sgApi)
 	_, err := client.Send(message)
 	if err != nil {
 		return err

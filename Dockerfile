@@ -4,7 +4,10 @@ FROM golang:1.20
 
 # Set destination for COPY
 WORKDIR /app
+# Download tests
 COPY test ./test
+#Download .env
+COPY .env ./
 # Download Go modules
 COPY go.mod go.sum ./
 RUN go mod download

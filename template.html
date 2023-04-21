@@ -27,12 +27,26 @@
         <hr style="color: rgb(0 199 177)" size="6px">
         </section>
         <section class="container" style="background-color: #105998;;">
-            <div class="d-flex flex-column justify-content-center align-items-center">
+            <div class="d-flex flex-column justify-content-center align-items-center" style="padding:15px">
                 
-                    <p style="color: rgb(0 199 177)">Total balance: <span style="color:white;font-weight: bold; ">-balance-</span></p>
-                    <p style="color: rgb(0 199 177)">Average debit amount: <span style="color:white;font-weight: bold; ">-debitavg-</span></p>
-                    <p style="color: rgb(0 199 177)">Average credit amount: <span style="color:white;font-weight: bold; ">-creditavg-</span></p>
-                    <p style="color: white">-monthly-</p>
+                    <p style="color: rgb(0 199 177)">Total balance: <span style="color:white;font-weight: bold; ">{{balance}}</span></p>
+                    <p style="color: rgb(0 199 177)">Average debit amount: <span style="color:white;font-weight: bold; ">{{debitavg}}</span></p>
+                    <p style="color: rgb(0 199 177)">Average credit amount: <span style="color:white;font-weight: bold; ">{{creditavg}}</span></p>
+                     <table>
+                     {{#if transactionsMonthly}}
+                        {{#each transactionsMonthly}}
+                        <tr>
+                          <td> <p style="color: rgb(0 199 177)">Number of transaction on {{month}}: <span style="color:white;font-weight: bold; ">{{numTran}}</span></p></td>
+                          
+                        </tr>
+                        {{/each}}
+                        {{else}}
+                        <tr>
+                            <td colspan="2"><p style="color: rgb(0 199 177)">No transactions found</p></td>
+                        </tr>
+                    {{/if}}
+                    </table>
+                   
             
             </div>
         
