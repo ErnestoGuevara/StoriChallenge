@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -20,11 +22,12 @@ type config struct {
 	}
 }
 
-func loadConfig() (*config, error) {
+func LoadConfig() (*config, error) {
 	// Load the .env file
 	err := godotenv.Load()
 	if err != nil {
-		return nil, err
+		logger := logger.NewLogger("FILE_ERROR: ")
+		logger.Error(fmt.Sprintf("Error loading .env file: %v", err))
 	}
 
 	// Create a new config instance
