@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -21,30 +23,49 @@ type Transactions struct {
 	Value float64
 }
 
+var DBUser string
+var DBPassword string
+var DBHost string
+var DBPort string
+var DBName string
+var SGApi string
+var SGTemplate string
+var db *sql.DB
+var err error
+
 func main() {
-	connectDB()
+
+	//Open .env File
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	DBUser = os.Getenv("DB_USER")
+	DBPassword = os.Getenv("DB_PASSWORD")
+	DBHost = os.Getenv("DB_HOST")
+	DBPort = os.Getenv("DB_PORT")
+	DBName = os.Getenv("DB_NAME")
+	SGApi = os.Getenv("SG_APIKEY")
+	SGTemplate = os.Getenv("SG_TEMPLATEID")
+
 	csvFile("client1.csv")
 
 }
 func connectDB() {
+
 	//Use sql.Open to initialize a new sql.DB object
 	//Pass the driver name and the connection string
-	db, err := sql.Open("mysql", "admin:neto120899@tcp(database-storichallenge.ccmv5yteur66.us-east-1.rds.amazonaws.com:3306)/stori_challenge")
+	dataBaseString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DBUser, DBPassword, DBHost, DBPort, DBName)
+	db, err = sql.Open("mysql", dataBaseString)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 	//Call db.Ping() to check the connection
 	pingErr := db.Ping()
 	if pingErr != nil {
 		log.Fatal(pingErr)
 	}
 	fmt.Println("Connected!")
-
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS stori_transactions (id BIGINT PRIMARY KEY AUTO_INCREMENT,file VARCHAR(100), idFile INT, transaction VARCHAR(100), date VARCHAR(100));")
-	if err != nil {
-		log.Fatal(err)
-	}
 
 }
 
@@ -61,12 +82,7 @@ func csvFile(testFile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//Open MySQL connection to insert data
-	db, err := sql.Open("mysql", "admin:neto120899@tcp(database-storichallenge.ccmv5yteur66.us-east-1.rds.amazonaws.com:3306)/stori_challenge")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
+	connectDB()
 
 	// Process the transactions
 	var balance float64
@@ -163,13 +179,13 @@ func sendEmail(balance string, avergaCredit string, averageDebit string, transac
 	to := mail.NewEmail("Client", "neto120899@hotmail.com")
 
 	message := mail.NewV3MailInit(from, subject, to)
-	message.SetTemplateID("126b3b3d-eb7e-4b20-8d2b-bd1b2f9f712e")
+	message.SetTemplateID(SGTemplate)
 	message.Personalizations[0].SetSubstitution("-balance-", balance)
 	message.Personalizations[0].SetSubstitution("-debitavg-", averageDebit)
 	message.Personalizations[0].SetSubstitution("-creditavg-", avergaCredit)
 	message.Personalizations[0].SetSubstitution("-monthly-", transactionsMonthly)
 
-	client := sendgrid.NewSendClient("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")
+	client := sendgrid.NewSendClient(SGApi)
 	_, err := client.Send(message)
 	if err != nil {
 		return err
