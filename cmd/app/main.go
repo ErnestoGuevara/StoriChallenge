@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/fileProcessor"
+	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/summaryProcessor"
 )
 
 func main() {
-	fileProcessor.CsvFile("/Users/ernestoguevara/Desktop/StoriChallenge/test/client1.csv")
+	summaryProcessor.SummaryReportGenerator("/Users/ernestoguevara/Desktop/StoriChallenge/test/client1.csv")
 
 }

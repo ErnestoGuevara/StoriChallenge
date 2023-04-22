@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS stori_transactions (id BIGINT PRIMARY KEY AUTO_INCREMENT,file VARCHAR(100), idFile INT, transaction VARCHAR(100), date VARCHAR(100));

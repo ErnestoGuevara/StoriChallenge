@@ -40,8 +40,8 @@ func LoadConfig() (*config, error) {
 	cfg.Database.Port = os.Getenv("DB_PORT")
 	cfg.Database.DBName = os.Getenv("DB_NAME")
 
-	cfg.SendGrid.Api = os.Getenv("SENDGRID_API_KEY")
-	cfg.SendGrid.Template = os.Getenv("SENDGRID_TEMPLATE_ID")
+	cfg.SendGrid.Api = os.Getenv("SG_APIKEY")
+	cfg.SendGrid.Template = os.Getenv("SG_TEMPLATEID")
 
 	return cfg, nil
 }

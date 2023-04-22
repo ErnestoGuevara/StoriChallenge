@@ -1,25 +1,17 @@
-package fileProcessor
+package csvProcessor
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/csvProcessor"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/database"
-	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/emailSender"
-	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/logger"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/model"
+
+	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/logger"
 )
 
-func CsvFile(testFile string) {
-
-	transactions, err := csvProcessor.ReadFile(testFile)
-	if err != nil {
-		// Handle the error
-		logger := logger.NewLogger("FILE_ERROR: ")
-		logger.Error(fmt.Sprintf("Error opening csv file: %s", err.Error()))
-	}
+func ProcessData(transactions [][]string, testFile string) ([]float64, []float64, float64, map[string]int, error) {
 
 	// create a new database object
 	db, err := database.NewDB()
@@ -27,6 +19,7 @@ func CsvFile(testFile string) {
 		logger := logger.NewLogger("DB_ERROR: ")
 		logger.Error(fmt.Sprintf("Error initialazing database: %s", err.Error()))
 	}
+
 	// Process the transactions
 	var balance float64
 	var credits, debits []float64
@@ -101,36 +94,5 @@ func CsvFile(testFile string) {
 		}
 
 	}
-
-	// Generate summary report
-	averageCredit := calculateAverage(credits)
-	averageDebit := calculateAverage(debits)
-
-	summary := fmt.Sprintf("\nTotal balance is %.2f\nAverage debit amount: %.2f\nAverage credit amount: %.2f\n",
-		balance, averageDebit, averageCredit)
-
-	//Print Monthly transactions
-	for monthName, numTransactions := range monthlyTransactions {
-		summary += fmt.Sprintf("Number of transaction in %s: %d \n", monthName, numTransactions)
-	}
-	balanceStr := fmt.Sprintf("%.2f", balance)
-	averageCreditStr := fmt.Sprintf("%.2f", averageCredit)
-	averageDebitStr := fmt.Sprintf("%.2f", averageDebit)
-	fmt.Println(summary)
-
-	//Sending email
-	err = emailSender.SendEmail(balanceStr, averageCreditStr, averageDebitStr, monthlyTransactions)
-	if err != nil {
-		logger := logger.NewLogger("EMAIL_ERROR: ")
-		logger.Error(fmt.Sprintf("Error sending email: %v", err))
-	}
-
-}
-
-func calculateAverage(numbers []float64) float64 {
-	var sum float64
-	for _, num := range numbers {
-		sum += num
-	}
-	return sum / float64(len(numbers))
+	return debits, credits, balance, monthlyTransactions, nil
 }

@@ -19,9 +19,9 @@ func SendEmail(balance string, averageCredit string, averageDebit string, transa
 		logger.Error(fmt.Sprintf("Error loading configuration values: %v", err))
 	}
 
-	from := mail.NewEmail("Stori Challenge", "neto_1208@hotmail.com")
+	from := mail.NewEmail("Stori Challenge", "neto120899@hotmail.com")
 	subject := "Summary Report"
-	to := mail.NewEmail("Client", "neto120899@hotmail.com")
+	to := mail.NewEmail("Client", "neto_1208@hotmail.com")
 
 	message := mail.NewV3Mail()
 	message.SetFrom(from)
