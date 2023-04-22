@@ -7,6 +7,32 @@ The application should process the file and send summary information to a user i
 _This solution is developed with GoLang and MySQL on AWS RDS for database and also uses SendGrid email API in order to send the emails.
 Also Docker is used to run the service in a single image named "stori_challenge"._
 
+### File Arquitechture
+_For this project the structure is the one below_
+```
+cmd/
+├── app
+│   ├── config
+│   │    └── config.go
+│   ├──  database
+│   │     └── database.go
+│   ├── emailSender
+│   │    └── emailSender.go
+│   ├── logger
+│   │    └── logger.go
+│   ├── model
+│   │    ├── transaction.go
+│   │    └── transactions.go
+│   ├── summaryProcessor
+│   │   ├── csvProcessor
+│   │   │   ├── db.go
+│   │   │   └── user.go
+│   │   └── summaryReport.go
+│   ├── .env
+│   └── main.go
+
+```
+
 ### Requirements
 
 _You must have installed Docker in order to run the application. You can install it from [here](https://www.docker.com/products/docker-desktop/)._
@@ -22,14 +48,15 @@ git clone https://github.com/ErnestoGuevara/StoriChallenge.git
 _Or you can download the zip file and locate it wherever you want._
 
 ### Run
-_Once the repository is cloned and Docker already installed. You are going to build the image opening a terminal and being in the same path where the DockerFlie is located you will execute the following command:_
+_Once the repository is cloned and Docker already installed. You are going to build the image opening a terminal and being in the same path where the DockerFlie is located, in this case you have to stay in the root path of the repository (/), then you will have to execute the following command:_
 ```
 docker build --tag stori_challenge .
 ```
-_Finally in order to run the image you have to execute the following command, but you have to substitute "myemail@example.com" with your email in order to recive the summary to your email:_
+_Finally in order to run the image you have to execute the following command, but you have to substitute {myemail@example.com} with your email in order to recive the summary to your email:_
 ```
 docker run -e EMAIL_ADDRESS=myemail@example.com stori_challenge
 ```
+
 ### Results
 _Running the image for the first time you will see something like this in your terminal and recive an email with the Summary Report:_
 ```
