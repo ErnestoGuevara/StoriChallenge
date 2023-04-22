@@ -1,40 +1,32 @@
-package fieProcessor
+package fileProcessor
 
 import (
-	"encoding/csv"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
+	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/csvProcessor"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/database"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/emailSender"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/logger"
+	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/model"
 )
 
 func CsvFile(testFile string) {
+
+	transactions, err := csvProcessor.ReadFile(testFile)
+	if err != nil {
+		// Handle the error
+		logger := logger.NewLogger("FILE_ERROR: ")
+		logger.Error(fmt.Sprintf("Error opening csv file: %s", err.Error()))
+	}
+
 	// create a new database object
 	db, err := database.NewDB()
 	if err != nil {
 		logger := logger.NewLogger("DB_ERROR: ")
 		logger.Error(fmt.Sprintf("Error initialazing database: %s", err.Error()))
 	}
-
-	file, err := os.Open("./test/" + testFile)
-	if err != nil {
-		logger := logger.NewLogger("FILE_ERROR: ")
-		logger.Error(fmt.Sprintf("Error opening csv file: %v", err))
-	}
-	defer file.Close()
-
-	// Parse the CSV file
-	reader := csv.NewReader(file)
-	transactions, err := reader.ReadAll()
-	if err != nil {
-		logger := logger.NewLogger("FILE_ERROR: ")
-		logger.Error(fmt.Sprintf("Error parsing csv file: %v", err))
-	}
-
 	// Process the transactions
 	var balance float64
 	var credits, debits []float64
@@ -55,6 +47,7 @@ func CsvFile(testFile string) {
 		11: "November",
 		12: "December",
 	}
+	var transactionList []model.Transactions
 	for _, row := range transactions[1:] {
 		//Set idFile variable with row[0] value also with Atoi convert String to int
 		idFile, err := strconv.Atoi(row[0])
@@ -68,11 +61,18 @@ func CsvFile(testFile string) {
 		date := row[1]
 		//Set amount variable with row[2] value setting as float and without "+" symbol
 		amount, err := strconv.ParseFloat(strings.Trim(row[2], " "), 64)
-
 		if err != nil {
 			logger := logger.NewLogger("VALUE_ERROR: ")
 			logger.Error(fmt.Sprintf("Error converting from string to float: %v", err))
 		}
+
+		// Create a new Transactions object and append it to the transactionList
+		transactionList = append(transactionList, model.Transactions{
+			Id:    idFile,
+			Date:  date,
+			Value: amount,
+		})
+
 		month, err := strconv.Atoi(strings.Split(date, "/")[0])
 		if err != nil {
 			logger := logger.NewLogger("VALUE_ERROR: ")
@@ -118,6 +118,7 @@ func CsvFile(testFile string) {
 	averageDebitStr := fmt.Sprintf("%.2f", averageDebit)
 	fmt.Println(summary)
 
+	//Sending email
 	err = emailSender.SendEmail(balanceStr, averageCreditStr, averageDebitStr, monthlyTransactions)
 	if err != nil {
 		logger := logger.NewLogger("EMAIL_ERROR: ")

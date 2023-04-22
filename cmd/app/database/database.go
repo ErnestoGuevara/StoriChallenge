@@ -29,7 +29,6 @@ func NewDB() (*Database, error) {
 	if err != nil {
 		logger := logger.NewLogger("DB_ERROR: ")
 		logger.Error(fmt.Sprintf("Error initialazing database: %s", err.Error()))
-
 	}
 
 	// Call db.Ping() to check the connection
@@ -37,9 +36,11 @@ func NewDB() (*Database, error) {
 	if pingErr != nil {
 		logger := logger.NewLogger("DB_ERROR: ")
 		logger.Error(fmt.Sprintf("Error to ping database: %s", pingErr.Error()))
+	} else {
+		logger := logger.NewLogger("DB_INFO: ")
+		logger.Info("¡Database Connected!")
 	}
-	logger := logger.NewLogger("DB_INFO: ")
-	logger.Info("¡Database Connected!")
+
 	return &Database{db}, nil
 }
 
