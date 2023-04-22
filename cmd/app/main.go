@@ -6,5 +6,6 @@ import (
 
 func main() {
 	summaryProcessor.SummaryReportGenerator("/app/client1.csv")
+	summaryProcessor.SummaryReportGenerator("/app/client2.csv")
 
 }

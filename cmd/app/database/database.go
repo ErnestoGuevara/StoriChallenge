@@ -40,8 +40,45 @@ func NewDB() (*Database, error) {
 		logger := logger.NewLogger("DB_INFO: ")
 		logger.Info("¡Database Connected!")
 	}
+	// Check if the table exists in the database
+	rows, err := db.Query("SHOW TABLES LIKE 'stori_transactions'")
+	if err != nil {
+		logger := logger.NewLogger("DB_ERROR: ")
+		logger.Error(fmt.Sprintf("Error checking if the table stori_transactions exists: %s", err.Error()))
+	}
+
+	tableExists := false
+	if rows.Next() {
+		tableExists = true
+	}
+
+	// Create the table if it does not exist
+	if !tableExists {
+		err = createTable(db)
+		if err != nil {
+			logger := logger.NewLogger("DB_ERROR: ")
+			logger.Error(fmt.Sprintf("Error creating the table stori_transactions: %s", err.Error()))
+		} else {
+			logger := logger.NewLogger("DB_INFO: ")
+			logger.Info("The stori_transactions table has been created")
+		}
+	}
 
 	return &Database{db}, nil
+}
+
+func createTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS stori_transactions (
+		id BIGINT PRIMARY KEY AUTO_INCREMENT,
+		file VARCHAR(100),
+		idFile INT,
+		transaction FLOAT,
+		date VARCHAR(100)
+	)`)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // InsertTransaction inserts a transaction into the database
