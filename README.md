@@ -28,7 +28,7 @@ docker build --tag stori_challenge .
 ```
 _Finally in order to run the image you have to execute the following command, but you have to substitute "myemail@example.com" with your email in order to recive the summary to your email:_
 ```
-docker run -e EMAIL_ADDRESS=myemail@example.com my-image
+docker run -e EMAIL_ADDRESS=myemail@example.com stori_challenge
 ```
 ### Results
 _Running the image for the first time you will see something like this in your terminal and recive an email with the Summary Report:_
