@@ -2,6 +2,7 @@ package emailSender
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/config"
 	"github.com/ErnestoGuevara/StoriChallenge/cmd/app/logger"
@@ -20,15 +21,16 @@ func SendEmail(balance string, averageCredit string, averageDebit string, transa
 	}
 
 	from := mail.NewEmail("Stori Challenge", "neto120899@hotmail.com")
-	subject := "Summary Report"
-	to := mail.NewEmail("Client", "neto_1208@hotmail.com")
+
+	to := mail.NewEmail("Client", os.Getenv("EMAIL_ADDRESS"))
 
 	message := mail.NewV3Mail()
 	message.SetFrom(from)
-	message.Subject = subject
+	message.Subject = "Summary Report"
 
 	personalization := mail.NewPersonalization()
 	personalization.AddTos(to)
+	personalization.Subject = "Summary Report"
 
 	personalization.SetDynamicTemplateData("balance", balance)
 	personalization.SetDynamicTemplateData("debitavg", averageDebit)
@@ -52,9 +54,10 @@ func SendEmail(balance string, averageCredit string, averageDebit string, transa
 		logger := logger.NewLogger("EMAIL_ERROR: ")
 		logger.Error(fmt.Sprintf("Error consuming email API: %v", err))
 
+	} else if response.StatusCode == 202 {
+		logger := logger.NewLogger("EMAIL_INFO: ")
+		logger.Info("¡Email sended!")
 	}
-	logger := logger.NewLogger("Email_INFO: ")
-	logger.Info(fmt.Sprintf("Info of email API: %v", response))
 
 	return nil
 }

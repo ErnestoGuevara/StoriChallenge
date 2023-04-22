@@ -27,7 +27,7 @@ func SummaryReportGenerator(testFile string) {
 	averageCredit := calculateAverage(credits)
 	averageDebit := calculateAverage(debits)
 
-	summary := fmt.Sprintf("\nTotal balance is %.2f\nAverage debit amount: %.2f\nAverage credit amount: %.2f\n",
+	summary := fmt.Sprintf("\n--Summary Report--\nTotal balance is %.2f\nAverage debit amount: %.2f\nAverage credit amount: %.2f\n",
 		balance, averageDebit, averageCredit)
 
 	//Print Monthly transactions

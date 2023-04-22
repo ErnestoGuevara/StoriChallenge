@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	summaryProcessor.SummaryReportGenerator("/Users/ernestoguevara/Desktop/StoriChallenge/test/client1.csv")
+	summaryProcessor.SummaryReportGenerator("/app/client1.csv")
 
 }

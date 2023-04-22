@@ -52,9 +52,6 @@ func (d *Database) InsertTransaction(file string, idFile int, transaction float6
 	if err != nil {
 		logger := logger.NewLogger("DB_ERROR: ")
 		logger.Error(fmt.Sprintf("Error checking if the row already exists in the table stori_transactions: %s", err.Error()))
-	} else {
-		logger := logger.NewLogger("DB_INFO: ")
-		logger.Info("Values already on stori_transactions table")
 	}
 
 	// Insert the row if it doesn't already exist in the table
@@ -65,7 +62,7 @@ func (d *Database) InsertTransaction(file string, idFile int, transaction float6
 			logger.Error(fmt.Sprintf("Error inserting the row in the table stori_transactions: %s", err.Error()))
 		} else {
 			logger := logger.NewLogger("DB_INFO: ")
-			logger.Info("Values inserted on stori_transactions table")
+			logger.Info("Value inserted on stori_transactions table")
 		}
 	}
 
