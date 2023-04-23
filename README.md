@@ -130,6 +130,10 @@ Number of transaction in June: 1
 
 EMAIL_INFO: 2023/04/22 04:57:11 logger.go:17: [INFO] ¡Email sended!
 ```
+_And you should receive an email with the following format_
+
+![](https://storichallenge.s3.amazonaws.com/results/Email.jpeg)
+
 ### Constraints
 _The CSV file must have the Id,Date,Transactions columns._
 
@@ -139,6 +143,19 @@ _For the implementation of AWS, the Lambda, S3 and ECR tools were used.
 ECR was used to be able to upload the generated image to a repository called "storichallenge" to be able to use it in a container.
 Once the image was uploaded to ECR, a Lambda function was created with the option to create it with this image and this facilitate the creation of this function.
 As such, a function was developed with Lambda which generates the Summary Report, saves the information in the RDS database and sends the email with the information extracted from a csv format file that is uploaded to the "archvisoCSV/" folder in a bucket named "storichallenge". An event was created in order to the Lambda function is activated as long as a csv file is uploaded to the bucket._
+
+_The flowchart of the aforementioned implementation is represented by the image below._
+
+![](https://storichallenge.s3.amazonaws.com/results/FlowChart.png)
+
+_The Lambda function with the event of uploading a csv file to the bucket is seen as follows._
+
+![](https://storichallenge.s3.amazonaws.com/results/Lambda.jpeg)
+
+_The CloudWatch tool was also used to be able to control the logs, as can be seen in the following image, a successful log after uploading the "client3.csv" file to the bucket._
+
+![](https://storichallenge.s3.amazonaws.com/results/CloudWatch.jpeg)
+
 
 ## Author
 Ernesto Ibhar Guevara Gómez
