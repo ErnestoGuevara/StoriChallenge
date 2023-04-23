@@ -21,7 +21,7 @@ func SendEmail(balance string, averageCredit string, averageDebit string, transa
 		logger.Error(fmt.Sprintf("Error loading configuration values: %v", err))
 	}
 
-	from := mail.NewEmail("Stori Challenge", "neto120899@hotmail.com")
+	from := mail.NewEmail("Stori Challenge", "netoruk120899@hotmail.com")
 	emailAddress := os.Getenv("EMAIL_ADDRESS")
 	//Validate if it is a valid email address
 	if !strings.Contains(emailAddress, "@") {
@@ -64,6 +64,9 @@ func SendEmail(balance string, averageCredit string, averageDebit string, transa
 		} else if response.StatusCode == 202 {
 			logger := logger.NewLogger("EMAIL_INFO: ")
 			logger.Info("¡Email sended!")
+		} else {
+			logger := logger.NewLogger("EMAIL_INFO: ")
+			logger.Info(response.Body)
 		}
 
 	}
